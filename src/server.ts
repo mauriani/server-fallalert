@@ -105,3 +105,4 @@ app.get("/:id/user/dependents", async (request, response) => {
 
   return response.json(getDependents);
 });
+
