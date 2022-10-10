@@ -31,9 +31,9 @@ model Dependents {
   zipCode   String
   address   String
   road      String
+  cpf       String   @unique
   number    Int
   User      User?    @relation(fields: [userId], references: [id])
   userId    String?
   createdAt DateTime @default(now())
 }
-

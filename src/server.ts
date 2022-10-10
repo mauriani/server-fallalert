@@ -54,9 +54,7 @@ app.post("/users/signIn", async (request, response) => {
   });
 
   if (!user) {
-    return response
-      .status(400)
-      .json({ error: "Ocorreu um erro ao validar email, tente novamente!" });
+    return response.status(400).json({ error: "Usuário não identificado" });
   } else {
     const checkPassword = password == user.password;
 
@@ -73,21 +71,34 @@ app.post("/:id/dependents", async (request, response) => {
   const body: any = request.body;
   const userId = request.params.id;
 
-  const newDependents = await prisma.dependents.create({
-    data: {
-      userId,
-      name: body.name,
-      age: body.age,
-      photo: body.photo,
-      phone: body.phone,
-      degree: body.degree,
-      zipCode: body.zipCode,
-      address: body.address,
-      road: body.road,
-      number: body.number,
+  const dependentExists = await prisma.dependents.findUnique({
+    where: {
+      cpf: body.cpf,
     },
   });
-  return response.json(newDependents);
+
+  if (dependentExists) {
+    return response.status(400).json({
+      error: "Esse dependente já foi cadastrado !",
+    });
+  } else {
+    const newDependents = await prisma.dependents.create({
+      data: {
+        userId,
+        name: body.name,
+        age: body.age,
+        cpf: body.cpf,
+        photo: body.photo,
+        phone: body.phone,
+        degree: body.degree,
+        zipCode: body.zipCode,
+        address: body.address,
+        road: body.road,
+        number: body.number,
+      },
+    });
+    return response.json(newDependents);
+  }
 });
 
 // get Dependents
@@ -106,3 +117,7 @@ app.get("/:id/user/dependents", async (request, response) => {
   return response.json(getDependents);
 });
 
+// falta as rotas de cadastro de imagens
+
+// https://gist.github.com/stardustxx/58748550699228174b805aaadfc98a35
+// https://github.com/mauriani/GoBarber-Back-End (usa jsonwebtoken para session)

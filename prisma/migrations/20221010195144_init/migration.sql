@@ -20,6 +20,7 @@ CREATE TABLE "Dependents" (
     "zipCode" TEXT NOT NULL,
     "address" TEXT NOT NULL,
     "road" TEXT NOT NULL,
+    "cpf" TEXT NOT NULL,
     "number" INTEGER NOT NULL,
     "userId" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -28,3 +29,6 @@ CREATE TABLE "Dependents" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Dependents_cpf_key" ON "Dependents"("cpf");
