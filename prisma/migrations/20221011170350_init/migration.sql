@@ -27,6 +27,17 @@ CREATE TABLE "Dependents" (
     CONSTRAINT "Dependents_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
+-- CreateTable
+CREATE TABLE "SensorData" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "fallen" TEXT NOT NULL,
+    "heartRate" TEXT NOT NULL,
+    "oxigenLevel" TEXT NOT NULL,
+    "dependentsId" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "SensorData_dependentsId_fkey" FOREIGN KEY ("dependentsId") REFERENCES "Dependents" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 

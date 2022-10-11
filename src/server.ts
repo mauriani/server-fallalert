@@ -117,7 +117,36 @@ app.get("/:id/user/dependents", async (request, response) => {
   return response.json(getDependents);
 });
 
-// falta as rotas de cadastro de imagens
+// post sensors data
 
-// https://gist.github.com/stardustxx/58748550699228174b805aaadfc98a35
-// https://github.com/mauriani/GoBarber-Back-End (usa jsonwebtoken para session)
+// busca dados sensores
+app.get("/:id/:dependentsId/dependents/sensors", async (request, response) => {
+  const dependentsId = request.params.dependentsId;
+
+  const getSensorData = await prisma.dependents.findUnique({
+    where: {
+      id: dependentsId,
+    },
+    include: {
+      sensorData: true,
+    },
+  });
+
+  return response.json(getSensorData);
+});
+
+app.post("/:id/:dependentsId/dependents/sensors", async (request, response) => {
+  const body: any = request.body;
+  const dependentsId = request.params.dependentsId;
+
+  const createSensorData = await prisma.sensorData.create({
+    data: {
+      dependentsId,
+      fallen: body.fallen,
+      heartRate: body.heartRate,
+      oxigenLevel: body.oxigenLevel,
+    },
+  });
+
+  return response.json(createSensorData);
+});
