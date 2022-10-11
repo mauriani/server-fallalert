@@ -117,10 +117,8 @@ app.get("/:id/user/dependents", async (request, response) => {
   return response.json(getDependents);
 });
 
-// post sensors data
-
 // busca dados sensores
-app.get("/:id/:dependentsId/dependents/sensors", async (request, response) => {
+app.get("/:id/:dependentsId/sensors", async (request, response) => {
   const dependentsId = request.params.dependentsId;
 
   const getSensorData = await prisma.dependents.findUnique({
@@ -135,7 +133,8 @@ app.get("/:id/:dependentsId/dependents/sensors", async (request, response) => {
   return response.json(getSensorData);
 });
 
-app.post("/:id/:dependentsId/dependents/sensors", async (request, response) => {
+// post sensors data
+app.post("/:id/:dependentsId/sensors", async (request, response) => {
   const body: any = request.body;
   const dependentsId = request.params.dependentsId;
 
