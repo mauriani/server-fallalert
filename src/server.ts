@@ -12,6 +12,26 @@ const prisma = new PrismaClient({
   log: ["query"],
 });
 
+// Middlewares
+
+async function verifyExistsAccountCpf(request: any, response: any, next: any) {
+  const { email } = request.headers;
+
+  const userExists = await prisma.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+
+  if (!userExists) {
+    return response
+      .status(400)
+      .json({ error: "Ocorreu um erro ao executar a aplicação" });
+  }
+
+  return next();
+}
+
 // create users
 app.post("/users", async (request, response) => {
   const body: any = request.body;
@@ -67,39 +87,43 @@ app.post("/users/signIn", async (request, response) => {
 });
 
 // create dependentes
-app.post("/:id/dependents", async (request, response) => {
-  const body: any = request.body;
-  const userId = request.params.id;
+app.post(
+  "/:id/dependents",
+  verifyExistsAccountCpf,
+  async (request, response) => {
+    const body: any = request.body;
+    const userId = request.params.id;
 
-  const dependentExists = await prisma.dependents.findUnique({
-    where: {
-      cpf: body.cpf,
-    },
-  });
-
-  if (dependentExists) {
-    return response.status(400).json({
-      error: "Esse dependente já foi cadastrado !",
-    });
-  } else {
-    const newDependents = await prisma.dependents.create({
-      data: {
-        userId,
-        name: body.name,
-        age: body.age,
+    const dependentExists = await prisma.dependents.findUnique({
+      where: {
         cpf: body.cpf,
-        photo: body.photo,
-        phone: body.phone,
-        degree: body.degree,
-        zipCode: body.zipCode,
-        address: body.address,
-        road: body.road,
-        number: body.number,
       },
     });
-    return response.json(newDependents);
+
+    if (dependentExists) {
+      return response.status(400).json({
+        error: "Esse dependente já foi cadastrado !",
+      });
+    } else {
+      const newDependents = await prisma.dependents.create({
+        data: {
+          userId,
+          name: body.name,
+          age: body.age,
+          cpf: body.cpf,
+          photo: body.photo,
+          phone: body.phone,
+          degree: body.degree,
+          zipCode: body.zipCode,
+          address: body.address,
+          road: body.road,
+          number: body.number,
+        },
+      });
+      return response.json(newDependents);
+    }
   }
-});
+);
 
 // get Dependents
 app.get("/:id/user/dependents", async (request, response) => {
