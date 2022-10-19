@@ -62,7 +62,7 @@ app.post("/users", async (request, response) => {
 });
 
 // SignIn
-app.post("/users/signIn", async (request, response) => {
+app.post("/sessions", async (request, response) => {
   const body: any = request.body;
 
   const { email, password } = body;
@@ -87,89 +87,97 @@ app.post("/users/signIn", async (request, response) => {
 });
 
 // create dependentes
-app.post(
-  "/:id/dependents",
-  verifyExistsAccountCpf,
+app.post("/:id/dependents", async (request, response) => {
+  const body: any = request.body;
+  const userId = request.params.id;
+
+  const dependentExists = await prisma.dependents.findUnique({
+    where: {
+      cpf: body.cpf,
+    },
+  });
+
+  if (dependentExists) {
+    return response.status(400).json({
+      error: "Esse dependente já foi cadastrado !",
+    });
+  } else {
+    const newDependents = await prisma.dependents.create({
+      data: {
+        userId,
+        name: body.name,
+        age: body.age,
+        cpf: body.cpf,
+        photo: body.photo,
+        phone: body.phone,
+        degree: body.degree,
+        zipCode: body.zipCode,
+        address: body.address,
+        road: body.road,
+        number: body.number,
+      },
+    });
+    return response.json(newDependents);
+  }
+});
+
+// get Dependents
+app.get(
+  "/:id/user/dependents",
+
   async (request, response) => {
-    const body: any = request.body;
     const userId = request.params.id;
 
-    const dependentExists = await prisma.dependents.findUnique({
+    const getDependents = await prisma.user.findUnique({
       where: {
-        cpf: body.cpf,
+        id: userId,
+      },
+      include: {
+        dependents: true,
       },
     });
 
-    if (dependentExists) {
-      return response.status(400).json({
-        error: "Esse dependente já foi cadastrado !",
-      });
-    } else {
-      const newDependents = await prisma.dependents.create({
-        data: {
-          userId,
-          name: body.name,
-          age: body.age,
-          cpf: body.cpf,
-          photo: body.photo,
-          phone: body.phone,
-          degree: body.degree,
-          zipCode: body.zipCode,
-          address: body.address,
-          road: body.road,
-          number: body.number,
-        },
-      });
-      return response.json(newDependents);
-    }
+    return response.json(getDependents);
   }
 );
 
-// get Dependents
-app.get("/:id/user/dependents", async (request, response) => {
-  const userId = request.params.id;
-
-  const getDependents = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    include: {
-      dependents: true,
-    },
-  });
-
-  return response.json(getDependents);
-});
-
 // busca dados sensores
-app.get("/:id/:dependentsId/sensors", async (request, response) => {
-  const dependentsId = request.params.dependentsId;
+app.get(
+  "/:id/:dependentsId/sensors",
 
-  const getSensorData = await prisma.dependents.findUnique({
-    where: {
-      id: dependentsId,
-    },
-    include: {
-      sensorData: true,
-    },
-  });
+  async (request, response) => {
+    const dependentsId = request.params.dependentsId;
 
-  return response.json(getSensorData);
-});
+    const getSensorData = await prisma.dependents.findUnique({
+      where: {
+        id: dependentsId,
+      },
+      include: {
+        sensorData: true,
+      },
+    });
+
+    return response.json(getSensorData);
+  }
+);
 
 // post sensors data
-app.post("/:id/:dependentsId/sensors", async (request, response) => {
-  const body: any = request.body;
-  const dependentsId = request.params.dependentsId;
+app.post(
+  "/:id/:dependentsId/sensors",
 
-  const createSensorData = await prisma.sensorData.create({
-    data: {
-      dependentsId,
-      fallen: body.fallen,
-      heartRate: body.heartRate,
-      oxigenLevel: body.oxigenLevel,
-    },
-  });
+  async (request, response) => {
+    const body: any = request.body;
+    const dependentsId = request.params.dependentsId;
 
-  return response.json(createSensorData);
-});
+    const createSensorData = await prisma.sensorData.create({
+      data: {
+        dependentsId,
+        fallen: body.fallen,
+        heartRate: body.heartRate,
+        oxigenLevel: body.oxigenLevel,
+      },
+    });
+
+    return response.json(createSensorData);
+  }
+);
