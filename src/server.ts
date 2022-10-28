@@ -57,7 +57,7 @@ app.post("/users", async (request, response) => {
         password: body.password,
       },
     });
-    return response.json(newUser);
+    return response.status(201).json(newUser);
   }
 });
 
