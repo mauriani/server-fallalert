@@ -1,16 +1,29 @@
 import express from "express";
 import cors from "cors";
+import multer from "multer";
+import path from "path";
 import { PrismaClient } from "@prisma/client";
 
-const app = express();
+import multerConfig from "./config/multer";
 
+const uploadFolder = path.resolve(__dirname, "../tmp");
+const upload = multer(multerConfig);
+
+const app = express();
 app.use(express.json());
 app.use(cors());
 app.listen(3333);
 
+app.use("/uploads", express.static(uploadFolder));
+
 const prisma = new PrismaClient({
   log: ["query"],
 });
+
+interface IPhoto {
+  filename: string;
+  size: number;
+}
 
 // Middlewares
 
@@ -48,7 +61,7 @@ app.post("/users", async (request, response) => {
       .status(400)
       .json({ error: "Esse usuário já foi cadastrado" });
   } else {
-    const newUser = await prisma.user.create({
+    await prisma.user.create({
       data: {
         name: body.name,
         email: body.email,
@@ -57,7 +70,9 @@ app.post("/users", async (request, response) => {
         password: body.password,
       },
     });
-    return response.status(201).json(newUser);
+    return response.status(201).json({
+      message: "Usuário cadastrado, agora faça o login para continuar!",
+    });
   }
 });
 
@@ -87,39 +102,46 @@ app.post("/sessions", async (request, response) => {
 });
 
 // create dependentes
-app.post("/:id/dependents", async (request, response) => {
-  const body: any = request.body;
-  const userId = request.params.id;
+app.post(
+  "/:id/dependents",
+  upload.single("file"),
+  async (request, response) => {
+    const body: any = request.body;
+    const userId = request.params.id;
 
-  const dependentExists = await prisma.dependents.findUnique({
-    where: {
-      cpf: body.cpf,
-    },
-  });
-
-  if (dependentExists) {
-    return response.status(400).json({
-      error: "Esse dependente já foi cadastrado !",
-    });
-  } else {
-    const newDependents = await prisma.dependents.create({
-      data: {
-        userId,
-        name: body.name,
-        age: body.age,
+    const dependentExists = await prisma.dependents.findUnique({
+      where: {
         cpf: body.cpf,
-        photo: body.photo,
-        phone: body.phone,
-        degree: body.degree,
-        zipCode: body.zipCode,
-        address: body.address,
-        road: body.road,
-        number: body.number,
       },
     });
-    return response.json(newDependents);
+
+    if (dependentExists) {
+      return response.status(400).json({
+        error: "Esse dependente já foi cadastrado !",
+      });
+    } else {
+      
+      // const image = request.file?.filename;
+
+      // const newDependents = await prisma.dependents.create({
+      //   data: {
+      //     userId,
+      //     name: body.name,
+      //     age: body.age,
+      //     cpf: body.cpf,
+      //     photo: image ? image : "",
+      //     phone: body.phone,
+      //     degree: body.degree,
+      //     zipCode: body.zipCode,
+      //     address: body.address,
+      //     road: body.road,
+      //     number: body.number,
+      //   },
+      // });
+      // return response.json(newDependents);
+    }
   }
-});
+);
 
 // get Dependents
 app.get(
@@ -181,3 +203,11 @@ app.post(
     return response.json(createSensorData);
   }
 );
+
+// app.post("/dependents/avatar", upload.single("file"), function (request, response) {
+//   const { filename, size } = request.file as IPhoto;
+
+//   console.log(filename, size);
+
+//   return response.send("Arquivo enviado com sucesso");
+// });
