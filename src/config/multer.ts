@@ -15,7 +15,7 @@ export default {
         "image/gif",
       ];
 
-      const fileName = `${uuidv4()}`;
+      const fileName = `${uuidv4()}-${file.filename}`;
 
       if (allowedMimes.includes(file.mimetype)) {
         return callback(null, fileName);
