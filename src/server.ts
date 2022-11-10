@@ -111,33 +111,37 @@ app.post("/:id/dependents", async (request, response) => {
     where: {
       cpf: body.cpf,
     },
+    select: {
+      cpf: true,
+    },
   });
 
-  console.log(body.cpf);
-  if (dependentExists) {
-    return response.status(400).json({
-      error: "Esse dependente já foi cadastrado !",
-    });
-  } else {
-    const newDependents = await prisma.dependents.create({
-      data: {
-        userId,
-        name: body.name,
-        age: body.age,
-        cpf: body.cpf,
-        photo: "",
-        phone: body.phone,
-        degree: body.degree,
-        zipCode: body.zipCode,
-        address: body.address,
-        road: body.road,
-        number: body.number,
-      },
-    });
+  const { cpf } = dependentExists as any;
+
+  if (cpf != null || cpf != undefined) {
     return response
-      .status(201)
-      .json({ message: "Dependente criado com sucesso" });
+      .status(400)
+      .json({ error: "Esse dependente já foi cadastrado" });
   }
+
+  await prisma.dependents.create({
+    data: {
+      userId,
+      name: body.name,
+      age: body.age,
+      cpf: body.cpf,
+      photo: body.photo,
+      phone: body.phone,
+      degree: body.degree,
+      zipCode: body.zipCode,
+      address: body.address,
+      road: body.road,
+      number: body.number,
+    },
+  });
+  return response
+    .status(201)
+    .json({ message: "Dependente criado com sucesso" });
 });
 
 // get Dependents
