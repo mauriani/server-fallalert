@@ -26,26 +26,6 @@ interface IPhoto {
   size: number;
 }
 
-// Middlewares
-
-async function verifyExistsAccountCpf(request: any, response: any, next: any) {
-  const { email } = request.headers;
-
-  const userExists = await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
-  });
-
-  if (!userExists) {
-    return response
-      .status(400)
-      .json({ error: "Ocorreu um erro ao executar a aplicação" });
-  }
-
-  return next();
-}
-
 // create users
 app.post("/users", async (request, response) => {
   const body: any = request.body;
