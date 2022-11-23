@@ -165,24 +165,20 @@ app.get(
 );
 
 // busca dados sensores
-app.get(
-  "/:id/:dependentsId/sensors",
+app.get("/:id/:dependentsId/sensors", async (request, response) => {
+  const dependentsId = request.params.dependentsId;
 
-  async (request, response) => {
-    const dependentsId = request.params.dependentsId;
+  const getSensorData = await prisma.dependents.findUnique({
+    where: {
+      id: dependentsId,
+    },
+    include: {
+      sensorData: true,
+    },
+  });
 
-    const getSensorData = await prisma.dependents.findUnique({
-      where: {
-        id: dependentsId,
-      },
-      include: {
-        sensorData: true,
-      },
-    });
-
-    return response.json(getSensorData);
-  }
-);
+  return response.json(getSensorData);
+});
 
 // post sensors data
 app.post(
